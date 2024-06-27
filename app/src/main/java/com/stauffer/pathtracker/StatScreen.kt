@@ -16,11 +16,14 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -31,10 +34,9 @@ import com.stauffer.pathtracker.data.StatDatabase
 import com.stauffer.pathtracker.data.StatItem
 import com.stauffer.pathtracker.ui.BtmAppBar
 import com.stauffer.pathtracker.ui.theme.PathtrackerTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.floor
 
 class StatScreen : ComponentActivity() {
@@ -43,21 +45,18 @@ class StatScreen : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PathtrackerTheme {
-
-                val statDao = Room.databaseBuilder(
+                val db = Room.databaseBuilder(
                     applicationContext,
                     StatDatabase::class.java, "stats"
-                ).build().statDao()
-                val stats = statDao.get()
-
+                ).build()
+                val statDao = remember { db.statDao() }
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = { BottomAppBar { BtmAppBar(context = this@StatScreen) } }
-                ) { innerPadding ->
+                ) {
                     StatScreenContent(
-                        modifier = Modifier.padding(innerPadding),
-                        stats = stats,
-                        statDao = statDao
+                        modifier = Modifier.padding(it),
+                        statDao
                     )
                 }
             }
@@ -66,145 +65,229 @@ class StatScreen : ComponentActivity() {
 }
 
 @Composable
-fun StatScreenContent(modifier: Modifier, stats: StatItem, statDao: StatDao) {
+fun StatScreenContent(
+    modifier: Modifier,
+    statDao: StatDao
+) {
     val scope = rememberCoroutineScope()
-    val currentStats = remember {
-        mutableStateOf(
-            StatItem(
-                name = stats.name,
-                charClass = stats.charClass,
-                level = stats.level,
-                race = stats.race,
-                deity = stats.deity,
-                alignment = stats.alignment,
-                str = stats.str,
-                dex = stats.dex,
-                con = stats.con,
-                int = stats.int,
-                wis = stats.wis,
-                cha = stats.cha
-            )
-        )
+    val currentStats by produceState<StatItem?>(initialValue = null) {
+        withContext(Dispatchers.IO) {
+            if (statDao.getCount() == 0) statDao.insert(StatItem())
+            value = statDao.get()
+        }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+    currentStats?.let { stats ->
+        val nameState = remember { mutableStateOf(stats.name) }
+        val charClassState = remember { mutableStateOf(stats.charClass) }
+        val levelState = remember { mutableStateOf(stats.level.toString()) }
+        val raceState = remember { mutableStateOf(stats.race) }
+        val deityState = remember { mutableStateOf(stats.deity) }
+        val alignmentState = remember { mutableStateOf(stats.alignment) }
+        val strState = remember { mutableStateOf(stats.str.toString()) }
+        val dexState = remember { mutableStateOf(stats.dex.toString()) }
+        val conState = remember { mutableStateOf(stats.con.toString()) }
+        val intState = remember { mutableStateOf(stats.int.toString()) }
+        val wisState = remember { mutableStateOf(stats.wis.toString()) }
+        val chaState = remember { mutableStateOf(stats.cha.toString()) }
+
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Info",
-                fontSize = 36.sp
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = "Info",
+                    fontSize = 36.sp
+                )
+            }
+            InfoRow(
+                label = "Name",
+                value = nameState.value,
+                onValueChange = { nameState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(name = nameState.value))
+                            }
+                        }
+                    }
+                }
+            )
+            InfoRow(
+                label = "Class",
+                value = charClassState.value,
+                onValueChange = { charClassState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(charClass = charClassState.value))
+                            }
+                        }
+                    }
+                }
+            )
+            InfoRow(
+                label = "Level",
+                value = levelState.value,
+                onValueChange = { levelState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(
+                                    stats.copy(
+                                        level = levelState.value.toIntOrNull() ?: 0
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+            InfoRow(
+                label = "Race",
+                value = raceState.value,
+                onValueChange = { raceState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(race = raceState.value))
+                            }
+                        }
+                    }
+                }
+            )
+            InfoRow(
+                label = "Deity",
+                value = deityState.value,
+                onValueChange = { deityState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(deity = deityState.value))
+                            }
+                        }
+                    }
+                }
+            )
+            InfoRow(
+                label = "Alignment",
+                value = alignmentState.value,
+                onValueChange = { alignmentState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(alignment = alignmentState.value))
+                            }
+                        }
+                    }
+                }
+            )
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = "Stats",
+                    fontSize = 36.sp
+                )
+            }
+
+
+            StatRow(
+                label = "Strength",
+                value = strState.value,
+                onValueChange = { strState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(str = strState.value.toIntOrNull() ?: 0))
+                            }
+                        }
+                    }
+                }
+            )
+            StatRow(
+                label = "Dexterity",
+                value = dexState.value,
+                onValueChange = { dexState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(dex = dexState.value.toIntOrNull() ?: 0))
+                            }
+                        }
+                    }
+                }
+            )
+            StatRow(
+                label = "Constitution",
+                value = conState.value,
+                onValueChange = { conState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(con = conState.value.toIntOrNull() ?: 0))
+                            }
+                        }
+                    }
+                }
+            )
+            StatRow(
+                label = "Intelligence",
+                value = intState.value,
+                onValueChange = { intState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(int = intState.value.toIntOrNull() ?: 0))
+                            }
+                        }
+                    }
+                }
+            )
+            StatRow(
+                label = "Wisdom",
+                value = wisState.value,
+                onValueChange = { wisState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(wis = wisState.value.toIntOrNull() ?: 0))
+                            }
+                        }
+                    }
+                }
+            )
+            StatRow(
+                label = "Charisma",
+                value = chaState.value,
+                onValueChange = { chaState.value = it },
+                modifier = Modifier.onFocusChanged {
+                    if (!it.isFocused) {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                statDao.update(stats.copy(cha = chaState.value.toIntOrNull() ?: 0))
+                            }
+                        }
+                    }
+                }
             )
         }
-        InfoRow(
-            label = "Name",
-            value = currentStats.value.name,
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(name = it)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        InfoRow(
-            label = "Class",
-            value = currentStats.value.charClass,
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(charClass = it)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        InfoRow(
-            label = "Level",
-            value = currentStats.value.level.toString(),
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(level = it.toIntOrNull() ?: 0)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        InfoRow(
-            label = "Race",
-            value = currentStats.value.race,
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(race = it)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        InfoRow(
-            label = "Deity",
-            value = currentStats.value.deity,
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(deity = it)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        InfoRow(
-            label = "Alignment",
-            value = currentStats.value.alignment,
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(alignment = it)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(
-                text = "Stats",
-                fontSize = 36.sp
-            )
-        }
-        StatRow(
-            label = "Strength",
-            value = currentStats.value.str.toString(),
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(str = it.toIntOrNull() ?: 0)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        StatRow(
-            label = "Dexterity",
-            value = currentStats.value.dex.toString(),
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(dex = it.toIntOrNull() ?: 0)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        StatRow(
-            label = "Constitution",
-            value = currentStats.value.con.toString(),
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(con = it.toIntOrNull() ?: 0)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        StatRow(
-            label = "Intelligence",
-            value = currentStats.value.int.toString(),
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(int = it.toIntOrNull() ?: 0)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        StatRow(
-            label = "Wisdom",
-            value = currentStats.value.wis.toString(),
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(wis = it.toIntOrNull() ?: 0)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
-        StatRow(
-            label = "Charisma",
-            value = currentStats.value.cha.toString(),
-            onValueChange = {
-                currentStats.value = currentStats.value.copy(cha = it.toIntOrNull() ?: 0)
-                scope.launchWithDelay { statDao.update(currentStats.value) }
-            }
-        )
     }
 }
 
@@ -222,14 +305,14 @@ fun InfoRow(
             text = label,
             fontSize = 24.sp,
             maxLines = 1,
-            modifier = Modifier.weight(0.5f)
+            modifier = modifier.weight(0.5f)
         )
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             singleLine = true,
-            modifier = Modifier
+            modifier = modifier
                 .padding(end = 16.dp)
                 .weight(1f)
         )
@@ -240,24 +323,25 @@ fun InfoRow(
 private fun StatRow(
     label: String,
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    modifier: Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 16.dp)
+        modifier = modifier.padding(start = 16.dp)
     ) {
         Text(
             text = label,
             fontSize = 24.sp,
             maxLines = 1,
-            modifier = Modifier.weight(0.6f)
+            modifier = modifier.weight(0.6f)
         )
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
-            modifier = Modifier
+            modifier = modifier
                 .weight(0.75f)
                 .padding(start = 58.dp, end = 16.dp)
         )
@@ -265,26 +349,9 @@ private fun StatRow(
             text = calculateStatModifier(value.toIntOrNull() ?: 0),
             fontSize = 20.sp,
             maxLines = 1,
-            modifier = Modifier.weight(0.5f)
+            modifier = modifier.weight(0.5f)
         )
     }
 }
 
 private fun calculateStatModifier(score: Int) = "Mod: ${floor((score - 10) / 2.0).toInt()}"
-
-/**
- * Launches a new coroutine and repeats `action` every `delayMillis` milliseconds
- */
-private fun CoroutineScope.launchWithDelay(
-    delayTime: Long = 2000,
-    action: suspend () -> Unit
-): Job {
-    var delayJob: Job? = null
-    return launch {
-        delayJob?.cancel()
-        delayJob = launch {
-            delay(delayTime)
-            action()
-        }
-    }
-}
