@@ -1,17 +1,24 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.stauffer.pathtracker
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,9 +28,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -74,22 +81,13 @@ fun StatScreenContent(
         withContext(Dispatchers.IO) {
             if (statDao.getCount() == 0) statDao.insert(StatItem())
             value = statDao.get()
+            Log.d("StatScreenContent", "Fetched stats: $value")
         }
     }
 
     currentStats?.let { stats ->
-        val nameState = remember { mutableStateOf(stats.name) }
+        var updatedStats by remember { mutableStateOf(stats.copy()) }
         val charClassState = remember { mutableStateOf(stats.charClass) }
-        val levelState = remember { mutableStateOf(stats.level.toString()) }
-        val raceState = remember { mutableStateOf(stats.race) }
-        val deityState = remember { mutableStateOf(stats.deity) }
-        val alignmentState = remember { mutableStateOf(stats.alignment) }
-        val strState = remember { mutableStateOf(stats.str.toString()) }
-        val dexState = remember { mutableStateOf(stats.dex.toString()) }
-        val conState = remember { mutableStateOf(stats.con.toString()) }
-        val intState = remember { mutableStateOf(stats.int.toString()) }
-        val wisState = remember { mutableStateOf(stats.wis.toString()) }
-        val chaState = remember { mutableStateOf(stats.cha.toString()) }
 
         Column(
             modifier = modifier
@@ -107,91 +105,146 @@ fun StatScreenContent(
             }
             InfoRow(
                 label = "Name",
-                value = nameState.value,
-                onValueChange = { nameState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(name = nameState.value))
-                            }
+                value = updatedStats.name,
+                onValueChange = {
+                    updatedStats = updatedStats.copy(name = it)
+                    scope.launch {
+                        statDao.update(updatedStats)
+                    }
+                },
+            )
+            var expandedClassPicker by remember { mutableStateOf(false) }
+            val classes = listOf(
+                "Alchemist",
+                "Barbarian",
+                "Bard",
+                "Cavalier",
+                "Cleric",
+                "Druid",
+                "Fighter",
+                "Monk",
+                "Paladin",
+                "Ranger",
+                "Rogue",
+                "Sorcerer",
+                "Wizard",
+                "Gunslinger",
+                "Inquisitor",
+                "Magus",
+                "Omdura",
+                "Oracle",
+                "Shifter",
+                "Summoner",
+                "Witch",
+                "Vampire Hunter",
+                "Vigilante",
+                "Arcanist",
+                "Bloodrager",
+                "Brawler",
+                "Hunter",
+                "Investigator",
+                "Shaman",
+                "Skald",
+                "Slayer",
+                "Swashbuckler",
+                "Warpriest",
+                "Kineticist",
+                "Medium",
+                "Mesmerist",
+                "Occultist",
+                "Psychic",
+                "Spiritualist",
+                "Antipaladin",
+                "Ninja",
+                "Samurai"
+            ).sorted()
+            var selectedClassItem by remember { mutableStateOf(classes[0]) }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 16.dp)
+            ) {
+                Text(
+                    text = "Class",
+                    fontSize = 24.sp,
+                    maxLines = 1,
+                    modifier = Modifier.weight(0.5f)
+                )
+                ExposedDropdownMenuBox(
+                    expanded = expandedClassPicker,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 16.dp),
+                    onExpandedChange = { expandedClassPicker = !expandedClassPicker }
+                ) {
+                    OutlinedTextField(
+                        value = charClassState.value,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedClassPicker,
+                        onDismissRequest = { expandedClassPicker = false }
+                    ) {
+                        classes.forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    updatedStats = updatedStats.copy(charClass = it)
+                                    selectedClassItem = it
+                                    charClassState.value = it
+                                    expandedClassPicker = false
+                                    scope.launch {
+                                        statDao.update(updatedStats)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
-            )
-            InfoRow(
-                label = "Class",
-                value = charClassState.value,
-                onValueChange = { charClassState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(charClass = charClassState.value))
-                            }
-                        }
-                    }
-                }
-            )
+            }
             InfoRow(
                 label = "Level",
-                value = levelState.value,
-                onValueChange = { levelState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(
-                                    stats.copy(
-                                        level = levelState.value.toIntOrNull() ?: 0
-                                    )
-                                )
-                            }
-                        }
+                value = updatedStats.level.toString(),
+                onValueChange = {
+                    updatedStats = updatedStats.copy(level = it.toIntOrNull() ?: 0)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
             )
             InfoRow(
                 label = "Race",
-                value = raceState.value,
-                onValueChange = { raceState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(race = raceState.value))
-                            }
-                        }
+                value = updatedStats.race,
+                onValueChange = {
+                    updatedStats = updatedStats.copy(race = it)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
             )
             InfoRow(
                 label = "Deity",
-                value = deityState.value,
-                onValueChange = { deityState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(deity = deityState.value))
-                            }
-                        }
+                value = updatedStats.deity,
+                onValueChange = {
+                    updatedStats = updatedStats.copy(deity = it)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
             )
             InfoRow(
                 label = "Alignment",
-                value = alignmentState.value,
-                onValueChange = { alignmentState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(alignment = alignmentState.value))
-                            }
-                        }
+                value = updatedStats.alignment,
+                onValueChange = {
+                    updatedStats = updatedStats.copy(alignment = it)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
             )
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -205,87 +258,69 @@ fun StatScreenContent(
 
             StatRow(
                 label = "Strength",
-                value = strState.value,
-                onValueChange = { strState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(str = strState.value.toIntOrNull() ?: 0))
-                            }
-                        }
+                value = updatedStats.str.toString(),
+                onValueChange = {
+                    updatedStats = updatedStats.copy(str = it.toIntOrNull() ?: 0)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
+                modifier = Modifier
             )
             StatRow(
                 label = "Dexterity",
-                value = dexState.value,
-                onValueChange = { dexState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(dex = dexState.value.toIntOrNull() ?: 0))
-                            }
-                        }
+                value = updatedStats.dex.toString(),
+                onValueChange = {
+                    updatedStats = updatedStats.copy(dex = it.toIntOrNull() ?: 0)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
+                modifier = Modifier
             )
             StatRow(
                 label = "Constitution",
-                value = conState.value,
-                onValueChange = { conState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(con = conState.value.toIntOrNull() ?: 0))
-                            }
-                        }
+                value = updatedStats.con.toString(),
+                onValueChange = {
+                    updatedStats = updatedStats.copy(con = it.toIntOrNull() ?: 0)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
+                modifier = Modifier
             )
             StatRow(
                 label = "Intelligence",
-                value = intState.value,
-                onValueChange = { intState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(int = intState.value.toIntOrNull() ?: 0))
-                            }
-                        }
+                value = updatedStats.int.toString(),
+                onValueChange = {
+                    updatedStats = updatedStats.copy(int = it.toIntOrNull() ?: 0)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
+                modifier = Modifier
             )
             StatRow(
                 label = "Wisdom",
-                value = wisState.value,
-                onValueChange = { wisState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(wis = wisState.value.toIntOrNull() ?: 0))
-                            }
-                        }
+                value = updatedStats.wis.toString(),
+                onValueChange = {
+                    updatedStats = updatedStats.copy(wis = it.toIntOrNull() ?: 0)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
+                modifier = Modifier
             )
             StatRow(
                 label = "Charisma",
-                value = chaState.value,
-                onValueChange = { chaState.value = it },
-                modifier = Modifier.onFocusChanged {
-                    if (!it.isFocused) {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                statDao.update(stats.copy(cha = chaState.value.toIntOrNull() ?: 0))
-                            }
-                        }
+                value = updatedStats.cha.toString(),
+                onValueChange = {
+                    updatedStats = updatedStats.copy(cha = it.toIntOrNull() ?: 0)
+                    scope.launch {
+                        statDao.update(updatedStats)
                     }
-                }
+                },
+                modifier = Modifier
             )
         }
     }
@@ -293,10 +328,13 @@ fun StatScreenContent(
 
 @Composable
 fun InfoRow(
-    label: String, value: String,
+    label: String,
+    value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var text by remember { mutableStateOf(value) } // Add this line
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(start = 16.dp)
@@ -304,12 +342,15 @@ fun InfoRow(
         Text(
             text = label,
             fontSize = 24.sp,
-            maxLines = 1,
+            maxLines =1,
             modifier = modifier.weight(0.5f)
         )
         OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
+            value = text, // Use the state variable here
+            onValueChange = {
+                text = it // Update the state variable
+                onValueChange(it) // Call the original callback
+            },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             singleLine = true,
             modifier = modifier
@@ -326,6 +367,8 @@ private fun StatRow(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
+    var text by remember { mutableStateOf(value) } // Add this line
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(start = 16.dp)
@@ -337,8 +380,11 @@ private fun StatRow(
             modifier = modifier.weight(0.6f)
         )
         OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
+            value = text, // Use the state variable here
+            onValueChange = {
+                text = it // Update the state variable
+                onValueChange(it) // Call the original callback
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             modifier = modifier
@@ -346,7 +392,7 @@ private fun StatRow(
                 .padding(start = 58.dp, end = 16.dp)
         )
         Text(
-            text = calculateStatModifier(value.toIntOrNull() ?: 0),
+            text = calculateStatModifier(text.toIntOrNull() ?: 0), // Use the state variable here
             fontSize = 20.sp,
             maxLines = 1,
             modifier = modifier.weight(0.5f)

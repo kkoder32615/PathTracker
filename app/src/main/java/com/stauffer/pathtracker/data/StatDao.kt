@@ -9,14 +9,14 @@ import androidx.room.Update
 @Dao
 interface StatDao {
     @Query("SELECT * FROM stats")
-    fun get(): StatItem
+    suspend fun get(): StatItem
 
     @Query("SELECT COUNT(*) FROM stats")
-    fun getCount(): Int
+    suspend fun getCount(): Int
 
     @Insert
     suspend fun insert(statItem: StatItem)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun update(statItem: StatItem)
+    suspend fun update(statItem: StatItem)
 }
