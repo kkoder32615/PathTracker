@@ -39,6 +39,8 @@ import androidx.room.Room
 import com.stauffer.pathtracker.data.StatDao
 import com.stauffer.pathtracker.data.StatDatabase
 import com.stauffer.pathtracker.data.StatItem
+import com.stauffer.pathtracker.data.alignments
+import com.stauffer.pathtracker.data.classes
 import com.stauffer.pathtracker.ui.BtmAppBar
 import com.stauffer.pathtracker.ui.theme.PathtrackerTheme
 import kotlinx.coroutines.Dispatchers
@@ -88,6 +90,7 @@ fun StatScreenContent(
     currentStats?.let { stats ->
         var updatedStats by remember { mutableStateOf(stats.copy()) }
         val charClassState = remember { mutableStateOf(stats.charClass) }
+        val alignmentState = remember { mutableStateOf(stats.alignment) }
 
         Column(
             modifier = modifier
@@ -113,51 +116,8 @@ fun StatScreenContent(
                     }
                 },
             )
+
             var expandedClassPicker by remember { mutableStateOf(false) }
-            val classes = listOf(
-                "Alchemist",
-                "Barbarian",
-                "Bard",
-                "Cavalier",
-                "Cleric",
-                "Druid",
-                "Fighter",
-                "Monk",
-                "Paladin",
-                "Ranger",
-                "Rogue",
-                "Sorcerer",
-                "Wizard",
-                "Gunslinger",
-                "Inquisitor",
-                "Magus",
-                "Omdura",
-                "Oracle",
-                "Shifter",
-                "Summoner",
-                "Witch",
-                "Vampire Hunter",
-                "Vigilante",
-                "Arcanist",
-                "Bloodrager",
-                "Brawler",
-                "Hunter",
-                "Investigator",
-                "Shaman",
-                "Skald",
-                "Slayer",
-                "Swashbuckler",
-                "Warpriest",
-                "Kineticist",
-                "Medium",
-                "Mesmerist",
-                "Occultist",
-                "Psychic",
-                "Spiritualist",
-                "Antipaladin",
-                "Ninja",
-                "Samurai"
-            ).sorted()
             var selectedClassItem by remember { mutableStateOf(classes[0]) }
 
             Row(
@@ -206,6 +166,7 @@ fun StatScreenContent(
                     }
                 }
             }
+
             InfoRow(
                 label = "Level",
                 value = updatedStats.level.toString(),
@@ -236,16 +197,57 @@ fun StatScreenContent(
                     }
                 },
             )
-            InfoRow(
-                label = "Alignment",
-                value = updatedStats.alignment,
-                onValueChange = {
-                    updatedStats = updatedStats.copy(alignment = it)
-                    scope.launch {
-                        statDao.update(updatedStats)
+
+            var expandedAlignmentPicker by remember { mutableStateOf(false) }
+            var selectedAlignmentItem by remember { mutableStateOf(alignments[0]) }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 16.dp)
+            ) {
+                Text(
+                    text = "Alignment",
+                    fontSize = 24.sp,
+                    maxLines = 1,
+                    modifier = Modifier.weight(0.5f)
+                )
+                ExposedDropdownMenuBox(
+                    expanded = expandedAlignmentPicker,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 16.dp),
+                    onExpandedChange = { expandedAlignmentPicker = !expandedAlignmentPicker }
+                ) {
+                    OutlinedTextField(
+                        value = alignmentState.value,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedAlignmentPicker,
+                        onDismissRequest = { expandedAlignmentPicker = false }
+                    ) {
+                        alignments.forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    updatedStats = updatedStats.copy(alignment = it)
+                                    selectedAlignmentItem = it
+                                    alignmentState.value = it
+                                    expandedAlignmentPicker = false
+                                    scope.launch {
+                                        statDao.update(updatedStats)
+                                    }
+                                }
+                            )
+                        }
                     }
-                },
-            )
+                }
+            }
+
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
@@ -254,7 +256,6 @@ fun StatScreenContent(
                     fontSize = 36.sp
                 )
             }
-
 
             StatRow(
                 label = "Strength",
@@ -333,7 +334,7 @@ fun InfoRow(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var text by remember { mutableStateOf(value) } // Add this line
+    var text by remember { mutableStateOf(value) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -346,10 +347,10 @@ fun InfoRow(
             modifier = modifier.weight(0.5f)
         )
         OutlinedTextField(
-            value = text, // Use the state variable here
+            value = text,
             onValueChange = {
-                text = it // Update the state variable
-                onValueChange(it) // Call the original callback
+                text = it
+                onValueChange(it)
             },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             singleLine = true,
@@ -367,7 +368,7 @@ private fun StatRow(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    var text by remember { mutableStateOf(value) } // Add this line
+    var text by remember { mutableStateOf(value) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -380,10 +381,10 @@ private fun StatRow(
             modifier = modifier.weight(0.6f)
         )
         OutlinedTextField(
-            value = text, // Use the state variable here
+            value = text,
             onValueChange = {
-                text = it // Update the state variable
-                onValueChange(it) // Call the original callback
+                text = it
+                onValueChange(it)
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
@@ -392,7 +393,7 @@ private fun StatRow(
                 .padding(start = 58.dp, end = 16.dp)
         )
         Text(
-            text = calculateStatModifier(text.toIntOrNull() ?: 0), // Use the state variable here
+            text = calculateStatModifier(text.toIntOrNull() ?: 0),
             fontSize = 20.sp,
             maxLines = 1,
             modifier = modifier.weight(0.5f)
