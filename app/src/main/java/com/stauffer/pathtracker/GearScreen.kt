@@ -153,12 +153,12 @@ class GearScreen : ComponentActivity() {
                         onEdit = { gearItem ->
                             gearItemToEdit = gearItem
                             gearId = gearItem.uid
-                            gearName = gearItem.gearName.toString()
-                            gearBonus = gearItem.gearBonus.toString()
-                            gearType = gearItem.gearType.toString()
-                            gearCheckPenalty = gearItem.gearCheckPenalty.toString()
-                            gearSpellFailure = gearItem.gearSpellFailure.toString()
-                            gearWeight = gearItem.gearWeight.toString()
+                            gearName = gearItem.name.toString()
+                            gearBonus = gearItem.bonus.toString()
+                            gearType = gearItem.type.toString()
+                            gearCheckPenalty = gearItem.checkPenalty.toString()
+                            gearSpellFailure = gearItem.spellFailure.toString()
+                            gearWeight = gearItem.weight.toString()
                             showEditDialog = true
                         }
                     )
@@ -198,7 +198,7 @@ private fun GScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "${it.gearName}",
+                        text = "${it.name}",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp
@@ -210,13 +210,13 @@ private fun GScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("Bonus: ${it.gearBonus}")
-                            Text("Type: ${it.gearType}")
-                            Text("Check Penalty: ${it.gearCheckPenalty}")
+                            Text("Bonus: ${it.bonus}")
+                            Text("Type: ${it.type}")
+                            Text("Check Penalty: ${it.checkPenalty}")
                         }
                         Column {
-                            Text("Spell Failure: ${it.gearSpellFailure}%")
-                            Text("Weight: ${it.gearWeight} lbs")
+                            Text("Spell Failure: ${it.spellFailure}%")
+                            Text("Weight: ${it.weight} lbs")
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -331,37 +331,37 @@ private fun GearDialogs(
             text = {
                 Column {
                     OutlinedTextField(
-                        value = updatedGearItem.gearName ?: "",
-                        onValueChange = { updatedGearItem = updatedGearItem.copy(gearName = it) },
+                        value = updatedGearItem.name ?: "",
+                        onValueChange = { updatedGearItem = updatedGearItem.copy(name = it) },
                         label = { Text("Item Name") }
                     )
                     OutlinedTextField(
-                        value = updatedGearItem.gearBonus ?: "",
-                        onValueChange = { updatedGearItem = updatedGearItem.copy(gearBonus = it) },
+                        value = updatedGearItem.bonus ?: "",
+                        onValueChange = { updatedGearItem = updatedGearItem.copy(bonus = it) },
                         label = { Text("AC Bonus") }
                     )
                     OutlinedTextField(
-                        value = updatedGearItem.gearType ?: "",
-                        onValueChange = { updatedGearItem = updatedGearItem.copy(gearType = it) },
+                        value = updatedGearItem.type ?: "",
+                        onValueChange = { updatedGearItem = updatedGearItem.copy(type = it) },
                         label = { Text("Type") }
                     )
                     OutlinedTextField(
-                        value = updatedGearItem.gearCheckPenalty ?: "",
+                        value = updatedGearItem.checkPenalty ?: "",
                         onValueChange = {
-                            updatedGearItem = updatedGearItem.copy(gearCheckPenalty = it)
+                            updatedGearItem = updatedGearItem.copy(checkPenalty = it)
                         },
                         label = { Text("Check Penalty") }
                     )
                     OutlinedTextField(
-                        value = updatedGearItem.gearSpellFailure ?: "",
+                        value = updatedGearItem.spellFailure ?: "",
                         onValueChange = {
-                            updatedGearItem = updatedGearItem.copy(gearSpellFailure = it)
+                            updatedGearItem = updatedGearItem.copy(spellFailure = it)
                         },
                         label = { Text("Spell Failure %") }
                     )
                     OutlinedTextField(
-                        value = updatedGearItem.gearWeight ?: "",
-                        onValueChange = { updatedGearItem = updatedGearItem.copy(gearWeight = it) },
+                        value = updatedGearItem.weight ?: "",
+                        onValueChange = { updatedGearItem = updatedGearItem.copy(weight = it) },
                         label = { Text("Weight") }
                     )
                 }

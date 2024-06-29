@@ -7,10 +7,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "gear")
 data class GearItem(
     @PrimaryKey(autoGenerate = true) val uid: Int = 0,
-    @ColumnInfo(name = "gearName", defaultValue = "") var gearName: String?,
-    @ColumnInfo(name = "gearBonus", defaultValue = "") var gearBonus: String?,
-    @ColumnInfo(name = "gearType", defaultValue = "") var gearType: String?,
-    @ColumnInfo(name = "gearCheckPenalty", defaultValue = "") var gearCheckPenalty: String?,
-    @ColumnInfo(name = "gearSpellFailure", defaultValue = "") var gearSpellFailure: String?,
-    @ColumnInfo(name = "gearWeight", defaultValue = "") var gearWeight: String?,
+    @ColumnInfo(name = "name", defaultValue = "") var name: String?,
+    @ColumnInfo(name = "bonus", defaultValue = "") var bonus: String?,
+    @ColumnInfo(name = "type", defaultValue = "") var type: String?,
+    @ColumnInfo(name = "checkPenalty", defaultValue = "") var checkPenalty: String?,
+    @ColumnInfo(name = "spellFailure", defaultValue = "") var spellFailure: String?,
+    @ColumnInfo(name = "weight", defaultValue = "") var weight: String?,
 )

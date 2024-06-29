@@ -49,6 +49,7 @@ fun BtmAppBar(context: Context) {
                                     context.startActivity(Intent(context, StatScreen::class.java))
                                 }
                             }
+
                             "Gear" -> {
                                 if (context is GearScreen) {
                                     // DO NOTHING, YOU ARE ALREADY ON THIS SCREEN
@@ -56,6 +57,7 @@ fun BtmAppBar(context: Context) {
                                     context.startActivity(Intent(context, GearScreen::class.java))
                                 }
                             }
+
                             "Weapons" -> {
                                 if (context is WeaponScreen) {
                                     // DO NOTHING, YOU ARE ALREADY ON THIS SCREEN
