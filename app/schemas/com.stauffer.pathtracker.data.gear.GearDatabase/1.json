@@ -1,0 +1,76 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "8d9a20bf7bd448b0a34f963dd815b4e9",
+    "entities": [
+      {
+        "tableName": "gear",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `gearName` TEXT DEFAULT '', `gearBonus` TEXT DEFAULT '', `gearType` TEXT DEFAULT '', `gearCheckPenalty` TEXT DEFAULT '', `gearSpellFailure` TEXT DEFAULT '', `gearWeight` TEXT DEFAULT '')",
+        "fields": [
+          {
+            "fieldPath": "uid",
+            "columnName": "uid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gearName",
+            "columnName": "gearName",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "gearBonus",
+            "columnName": "gearBonus",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "gearType",
+            "columnName": "gearType",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "gearCheckPenalty",
+            "columnName": "gearCheckPenalty",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "gearSpellFailure",
+            "columnName": "gearSpellFailure",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "gearWeight",
+            "columnName": "gearWeight",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "uid"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8d9a20bf7bd448b0a34f963dd815b4e9')"
+    ]
+  }
+}
