@@ -141,7 +141,7 @@ class GearScreen : ComponentActivity() {
                         ) { refreshKey++ }
                     }
                 ) {
-                    GScreen(
+                    GearScreenContent(
                         modifier = Modifier.padding(it),
                         gearDao,
                         refreshKey,
@@ -169,7 +169,7 @@ class GearScreen : ComponentActivity() {
 }
 
 @Composable
-private fun GScreen(
+private fun GearScreenContent(
     modifier: Modifier,
     gearDao: GearDao,
     refreshKey: Int,

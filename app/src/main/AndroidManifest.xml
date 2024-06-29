@@ -13,6 +13,11 @@
         android:theme="@style/Theme.Pathtracker"
         tools:targetApi="31">
         <activity
+            android:name=".SkillScreen"
+            android:exported="false"
+            android:label="@string/title_activity_skill_screen"
+            android:theme="@style/Theme.Pathtracker" />
+        <activity
             android:name=".WeaponScreen"
             android:exported="false"
             android:label="@string/title_activity_weapon_screen"

@@ -143,7 +143,7 @@ class WeaponScreen : ComponentActivity() {
                         ) { refreshKey++ }
                     }
                 ) {
-                    WScreen(
+                    WeaponScreenContent(
                         modifier = Modifier.padding(it),
                         weaponDao,
                         refreshKey,
@@ -172,7 +172,7 @@ class WeaponScreen : ComponentActivity() {
 }
 
 @Composable
-private fun WScreen(
+private fun WeaponScreenContent(
     modifier: Modifier,
     weaponDao: WeaponDao,
     refreshKey: Int,
