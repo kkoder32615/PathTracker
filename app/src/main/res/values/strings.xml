@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Pathtracker</string>
+    <string name="title_activity_gear_screen">GearScreen</string>
+    <string name="title_activity_weapon_screen">WeaponScreen</string>
 </resources>

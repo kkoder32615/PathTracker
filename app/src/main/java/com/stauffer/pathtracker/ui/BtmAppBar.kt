@@ -13,7 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.stauffer.pathtracker.GearScreen
 import com.stauffer.pathtracker.StatScreen
+import com.stauffer.pathtracker.WeaponScreen
 
 @Composable
 fun BtmAppBar(context: Context) {
@@ -45,6 +47,20 @@ fun BtmAppBar(context: Context) {
                                     // DO NOTHING, YOU ARE ALREADY ON THIS SCREEN
                                 } else {
                                     context.startActivity(Intent(context, StatScreen::class.java))
+                                }
+                            }
+                            "Gear" -> {
+                                if (context is GearScreen) {
+                                    // DO NOTHING, YOU ARE ALREADY ON THIS SCREEN
+                                } else {
+                                    context.startActivity(Intent(context, GearScreen::class.java))
+                                }
+                            }
+                            "Weapons" -> {
+                                if (context is WeaponScreen) {
+                                    // DO NOTHING, YOU ARE ALREADY ON THIS SCREEN
+                                } else {
+                                    context.startActivity(Intent(context, WeaponScreen::class.java))
                                 }
                             }
                         }

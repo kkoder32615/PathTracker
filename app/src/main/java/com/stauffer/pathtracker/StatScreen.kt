@@ -36,11 +36,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.room.Room
-import com.stauffer.pathtracker.data.StatDao
-import com.stauffer.pathtracker.data.StatDatabase
-import com.stauffer.pathtracker.data.StatItem
 import com.stauffer.pathtracker.data.alignments
 import com.stauffer.pathtracker.data.classes
+import com.stauffer.pathtracker.data.stats.StatDao
+import com.stauffer.pathtracker.data.stats.StatDatabase
+import com.stauffer.pathtracker.data.stats.StatItem
 import com.stauffer.pathtracker.ui.BtmAppBar
 import com.stauffer.pathtracker.ui.theme.PathtrackerTheme
 import kotlinx.coroutines.Dispatchers
@@ -343,7 +343,7 @@ fun InfoRow(
         Text(
             text = label,
             fontSize = 24.sp,
-            maxLines =1,
+            maxLines = 1,
             modifier = modifier.weight(0.5f)
         )
         OutlinedTextField(

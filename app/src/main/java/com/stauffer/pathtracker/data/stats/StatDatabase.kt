@@ -1,4 +1,4 @@
-package com.stauffer.pathtracker.data
+package com.stauffer.pathtracker.data.stats
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
