@@ -3,6 +3,7 @@ package com.stauffer.pathtracker.data.skills
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.stauffer.pathtracker.data.BaseStat
 
 @Entity(tableName = "skills")
 data class SkillItem(
@@ -46,4 +47,46 @@ data class SkillItem(
     @ColumnInfo(name = "survival", defaultValue = "") var survival: String = "",
     @ColumnInfo(name = "swim", defaultValue = "") var swim: String = "",
     @ColumnInfo(name = "useMagicDevice", defaultValue = "") var useMagicDevice: String = "",
+)
+
+val SKILL_TO_BASE_STAT_MAP: Map<String, BaseStat> = mapOf(
+    "acrobatics" to BaseStat.DEX,
+    "appraise" to BaseStat.INT,
+    "bluff" to BaseStat.CHA,
+    "climb" to BaseStat.STR,
+    "craft1" to BaseStat.INT,
+    "craft2" to BaseStat.INT,
+    "craft3" to BaseStat.INT,
+    "diplomacy" to BaseStat.CHA,
+    "disableDevice" to BaseStat.DEX,
+    "disguise" to BaseStat.CHA,
+    "escapeArtist" to BaseStat.DEX,
+    "fly" to BaseStat.DEX,
+    "handleAnimal" to BaseStat.CHA,
+    "heal" to BaseStat.WIS,
+    "intimidate" to BaseStat.CHA,
+    "knowledgeArcana" to BaseStat.INT,
+    "knowledgeDungeoneering" to BaseStat.INT,
+    "knowledgeEngineering" to BaseStat.INT,
+    "knowledgeGeography" to BaseStat.INT,
+    "knowledgeHistory" to BaseStat.INT,
+    "knowledgeLocal" to BaseStat.INT,
+    "knowledgeNature" to BaseStat.INT,
+    "knowledgeNobility" to BaseStat.INT,
+    "knowledgePlanes" to BaseStat.INT,
+    "knowledgeReligion" to BaseStat.INT,
+    "linguistics" to BaseStat.INT,
+    "perception" to BaseStat.WIS,
+    "perform1" to BaseStat.CHA,
+    "perform2" to BaseStat.CHA,
+    "profession1" to BaseStat.WIS,
+    "profession2" to BaseStat.WIS,
+    "ride" to BaseStat.DEX,
+    "senseMotive" to BaseStat.WIS,
+    "sleightOfHand" to BaseStat.DEX,
+    "spellcraft" to BaseStat.INT,
+    "stealth" to BaseStat.DEX,
+    "survival" to BaseStat.WIS,
+    "swim" to BaseStat.STR,
+    "useMagicDevice" to BaseStat.CHA
 )

@@ -74,7 +74,7 @@ class StatScreen : ComponentActivity() {
 }
 
 @Composable
-fun StatScreenContent(
+private fun StatScreenContent(
     modifier: Modifier,
     statDao: StatDao
 ) {
@@ -328,7 +328,7 @@ fun StatScreenContent(
 }
 
 @Composable
-fun InfoRow(
+private fun InfoRow(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
