@@ -5,16 +5,18 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SkillDao {
     @Query("SELECT * FROM skills")
-    fun get(): Flow<List<SkillItem>>
+    suspend fun get(): SkillItem
+
+    @Query("SELECT COUNT(*) FROM skills")
+    suspend fun getCount(): Int
 
     @Insert
-    fun insert(skillItem: SkillItem)
+    suspend fun insert(skillItem: SkillItem)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun update(skillItem: SkillItem)
+    suspend fun update(skillItem: SkillItem)
 }
