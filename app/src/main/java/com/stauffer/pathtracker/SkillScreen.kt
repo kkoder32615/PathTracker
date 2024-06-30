@@ -4,16 +4,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -21,17 +24,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.room.Room
 import com.stauffer.pathtracker.data.BaseStat
+import com.stauffer.pathtracker.data.skills
 import com.stauffer.pathtracker.data.skills.SKILL_TO_BASE_STAT_MAP
 import com.stauffer.pathtracker.data.skills.SkillDao
 import com.stauffer.pathtracker.data.skills.SkillDatabase
 import com.stauffer.pathtracker.data.skills.SkillItem
+import com.stauffer.pathtracker.data.skills.getSkillString
 import com.stauffer.pathtracker.data.stats.StatDao
 import com.stauffer.pathtracker.data.stats.StatDatabase
 import com.stauffer.pathtracker.data.stats.StatItem
 import com.stauffer.pathtracker.ui.theme.PathtrackerTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.floor
 
@@ -97,30 +104,72 @@ private fun SkillScreenContent(
         Text(text = "Ranks")
         Text(text = "Misc")
     }
-    currentSkills?.let { skills ->
-        var updatedSkills by remember { mutableStateOf(skills.copy()) }
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+
+    currentSkills?.let { skillItem ->
+        var updatedSkills by remember { mutableStateOf(skillItem.copy()) }
+
+        LazyColumn(
+            state = rememberLazyListState(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(top = 16.dp),
         ) {
-            SkillRow(
-                name = "Acrobatics",
-                ranks = updatedSkills.acrobatics,
-                mod = returnStatModifier(SKILL_TO_BASE_STAT_MAP[skills.acrobatics], dexterity)
-            )
-            SkillRow(
-                name = "Appraise",
-                ranks = updatedSkills.appraise,
-                mod = returnStatModifier(SKILL_TO_BASE_STAT_MAP[skills.appraise], intelligence)
-            )
-            SkillRow(
-                name = "Bluff",
-                ranks = updatedSkills.bluff,
-                mod = returnStatModifier(SKILL_TO_BASE_STAT_MAP[skills.bluff], charisma)
-            )
+             items(skills) {
+                 SkillRow(
+                     name = it,
+                     ranks = ,
+                     mod = returnStatModifier(SKILL_TO_BASE_STAT_MAP[it], strength),
+                     onValueChange = {
+                         updatedSkills = updatedSkills.copy(setSkillString(it, it))
+                         scope.launch {
+                             skillDao.update(updatedSkills)
+                         }
+                     }
+                 )
+             }
         }
+
+//        Column(
+//            modifier = modifier
+//                .fillMaxSize()
+//                .verticalScroll(rememberScrollState()),
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            SkillRow(
+//                name = "Acrobatics",
+//                ranks = updatedSkills.acrobatics,
+//                mod = returnStatModifier(SKILL_TO_BASE_STAT_MAP[skills.acrobatics], dexterity),
+//                onValueChange = {
+//                    updatedSkills = updatedSkills.copy(acrobatics = it)
+//                    scope.launch {
+//                        skillDao.update(updatedSkills)
+//                    }
+//                }
+//            )
+//            SkillRow(
+//                name = "Appraise",
+//                ranks = updatedSkills.appraise,
+//                mod = returnStatModifier(SKILL_TO_BASE_STAT_MAP[skills.appraise], intelligence),
+//                onValueChange = {
+//                    updatedSkills = updatedSkills.copy(appraise = it)
+//                    scope.launch {
+//                        skillDao.update(updatedSkills)
+//                    }
+//                }
+//            )
+//            SkillRow(
+//                name = "Bluff",
+//                ranks = updatedSkills.bluff,
+//                mod = returnStatModifier(SKILL_TO_BASE_STAT_MAP[skills.bluff], charisma),
+//                onValueChange = {
+//                    updatedSkills = updatedSkills.copy(bluff = it)
+//                    scope.launch {
+//                        skillDao.update(updatedSkills)
+//                    }
+//                }
+//            )
+//        }
     }
 }
 
@@ -129,12 +178,13 @@ private fun SkillRow(
     name: String,
     ranks: String,
     mod: String,
+    onValueChange: (String) -> Unit,
 ) {
+    val misc = remember { mutableIntStateOf(0) }
     // If player has at least 1 rank in a skill, award +3 to the misc modifier
-    var misc = 0
-    if (ranks.toInt() > 0) misc += 3
+    if (ranks.toInt() > 0) misc.intValue += 3
 
-    val total = ranks.toInt() + mod.toInt() + misc
+    val total = ranks.toInt() + mod.toInt() + misc.intValue
 
     Row {
         Text(text = name)

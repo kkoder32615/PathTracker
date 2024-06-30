@@ -90,3 +90,48 @@ val SKILL_TO_BASE_STAT_MAP: Map<String, BaseStat> = mapOf(
     "swim" to BaseStat.STR,
     "useMagicDevice" to BaseStat.CHA
 )
+
+fun getSkillString(skill: String): String {
+    return when (skill.lowercase()) {
+        "acrobatics" -> "acrobatics"
+        "appraise" -> "appraise"
+        "bluff" -> "bluff"
+        "climb" -> "climb"
+        "craft1" -> "craft1"
+        "craft2" -> "craft2"
+        "craft3" -> "craft3"
+        "diplomacy" -> "diplomacy"
+        "disableDevice" -> "disableDevice"
+        "disguise" -> "disguise"
+        "escapeArtist" -> "escapeArtist"
+        "fly" -> "fly"
+        "handleAnimal" -> "handleAnimal"
+        "heal" -> "heal"
+        "intimidate" -> "intimidate"
+        "knowledgeArcana" -> "knowledgeArcana"
+        "knowledgeDungeoneering" -> "knowledgeDungeoneering"
+        "knowledgeEngineering" -> "knowledgeEngineering"
+        "knowledgeGeography" -> "knowledgeGeography"
+        "knowledgeHistory" -> "knowledgeHistory"
+        "knowledgeLocal" -> "knowledgeLocal"
+        "knowledgeNature" -> "knowledgeNature"
+        "knowledgeNobility" -> "knowledgeNobility"
+        "knowledgePlanes" -> "knowledgePlanes"
+        "knowledgeReligion" -> "knowledgeReligion"
+        "linguistics" -> "linguistics"
+        "perception" -> "perception"
+        "perform1" -> "perform1"
+        "perform2" -> "perform2"
+        "profession1" -> "profession1"
+        "profession2" -> "profession2"
+        "ride" -> "ride"
+        "senseMotive" -> "senseMotive"
+        "sleightOfHand" -> "sleightOfHand"
+        "spellcraft" -> "spellcraft"
+        "stealth" -> "stealth"
+        "survival" -> "survival"
+        "swim" -> "swim"
+        "useMagicDevice" -> "useMagicDevice"
+        else -> ""
+    }
+}
